@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ClassAssistant.Backend/ClassAssistant.Backend.csproj" />
+  <Project Path="ClassAssistant.Frontend/ClassAssistant.Frontend.csproj" />
+  <Project Path="ClassAssistant.Shared/ClassAssistant.Shared.csproj" />
+</Solution>

@@ -1,0 +1,312 @@
+@page "/student/dashboard"
+@using ClassAssistant.Shared.DTOs
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<div class="space-y-6">
+    <!-- Header Banner -->
+    <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold text-emerald-400">
+                👨‍🎓
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/30">Student Portal</span>
+                    <span class="text-xs text-slate-400">ID: @PortalData.Student.Id</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mt-0.5">Welcome, @PortalData.Student.Name</h2>
+                <p class="text-xs text-slate-400">Computer Science & Engineering Department</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button type="button" @onclick="OpenAbsenceModal" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                <span>📝 Submit Excuse Notice</span>
+            </button>
+            <button type="button" @onclick="StartFaceRegistration" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition">
+                <span>📷 Register Face Biometrics</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Course Attendance Breakdown Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach (var c in PortalData.CourseStats)
+        {
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-base text-white">@c.Code</h4>
+                        <p class="text-xs text-slate-400 truncate max-w-[180px]">@c.Title</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold @(c.Status == "Good Standing" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : c.Status == "Warning" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30")">
+                        @c.Status
+                    </span>
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Attendance Ratio</span>
+                        <span class="font-bold text-emerald-400">@c.Percentage%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                        <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: @(c.Percentage)%"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-2 text-center text-[11px] border-t border-slate-800/80">
+                    <div class="bg-slate-900/60 p-2 rounded-xl">
+                        <p class="text-slate-400 text-[10px]">Total</p>
+                        <p class="font-bold text-white">@c.TotalClasses</p>
+                    </div>
+                    <div class="bg-slate-900/60 p-2 rounded-xl">
+                        <p class="text-emerald-400 text-[10px]">Attended</p>
+                        <p class="font-bold text-emerald-400">@c.AttendedClasses</p>
+                    </div>
+                    <div class="bg-slate-900/60 p-2 rounded-xl">
+                        <p class="text-rose-400 text-[10px]">Absent</p>
+                        <p class="font-bold text-rose-400">@c.AbsentClasses</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Attendance Logs Table -->
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <h3 class="font-bold text-base text-white">Recent Class Check-In Logs</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4">Course</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Check In</th>
+                        <th class="py-3 px-4">Check Out</th>
+                        <th class="py-3 px-4">Stay Time</th>
+                        <th class="py-3 px-4 text-right">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @if (PortalData.AttendanceLogs.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-500">No attendance logs available yet.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var log in PortalData.AttendanceLogs)
+                        {
+                            <tr class="hover:bg-slate-800/40 transition">
+                                <td class="py-3 px-4 font-semibold text-white">@log.Course</td>
+                                <td class="py-3 px-4">@log.Date</td>
+                                <td class="py-3 px-4 text-emerald-400">@log.CheckIn</td>
+                                <td class="py-3 px-4 text-slate-400">@log.CheckOut</td>
+                                <td class="py-3 px-4">@log.TotalMinutes mins</td>
+                                <td class="py-3 px-4 text-right">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold @(log.Status == "Present" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30")">
+                                        @log.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Absence Notice Modal -->
+@if (ShowAbsenceModal)
+{
+    <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-md w-full border border-slate-800 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white">Submit Absence Notice</h3>
+                <button type="button" @onclick="() => ShowAbsenceModal = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">✕</button>
+            </div>
+
+            <EditForm Model="NoticeForm" OnValidSubmit="SubmitNotice" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Course Code</label>
+                    <select @bind="NoticeForm.Course" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none">
+                        <option value="">-- Select Course --</option>
+                        @foreach (var c in PortalData.Student.Courses)
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Date of Absence</label>
+                    <input type="date" @bind="NoticeDateObj" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Reason for Absence</label>
+                    <textarea @bind="NoticeForm.Reason" rows="3" placeholder="Provide valid excuse reason..."
+                              class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-md transition">
+                    Submit Excuse Notice
+                </button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Face Biometrics Registration Wizard Modal -->
+@if (ShowFaceRegModal)
+{
+    <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-lg w-full border border-slate-800 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white">Biometric Face Dataset Wizard</h3>
+                <button type="button" @onclick="StopFaceReg" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">✕</button>
+            </div>
+
+            <div class="relative bg-slate-950 rounded-xl border border-slate-800 aspect-video overflow-hidden flex items-center justify-center">
+                <canvas id="regCanvas" class="w-full h-full object-cover"></canvas>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-400">Captured Samples</span>
+                    <span class="font-bold text-emerald-400">@CapturedSamples / 15</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                    <div class="h-full bg-emerald-500 transition-all duration-300" style="width: @((CapturedSamples / 15.0) * 100)%"></div>
+                </div>
+            </div>
+
+            <p class="text-xs text-center text-slate-400">
+                @(RegStatusMessage ?? "Look directly into the camera. 15 face samples will be captured automatically.")
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    private StudentPortalDataResponse PortalData { get; set; } = new();
+    private bool ShowAbsenceModal { get; set; } = false;
+    private bool ShowFaceRegModal { get; set; } = false;
+
+    private SubmitAbsenceNoticeRequest NoticeForm { get; set; } = new();
+    private DateTime NoticeDateObj { get; set; } = DateTime.UtcNow.Date;
+
+    private int CapturedSamples { get; set; } = 0;
+    private string RegStatusMessage { get; set; } = string.Empty;
+    private HubConnection? RegHubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPortalData();
+    }
+
+    private async Task LoadPortalData()
+    {
+        try
+        {
+            var res = await Http.GetFromJsonAsync<StudentPortalDataResponse>("/student/portal_data");
+            if (res != null) PortalData = res;
+        }
+        catch { }
+    }
+
+    private void OpenAbsenceModal()
+    {
+        ShowAbsenceModal = true;
+    }
+
+    private async Task SubmitNotice()
+    {
+        NoticeForm.Date = NoticeDateObj.ToString("yyyy-MM-dd");
+        try
+        {
+            var res = await Http.PostAsJsonAsync("/student/absence_notice", NoticeForm);
+            if (res.IsSuccessStatusCode)
+            {
+                ShowAbsenceModal = false;
+                await LoadPortalData();
+            }
+        }
+        catch { }
+    }
+
+    private async Task StartFaceRegistration()
+    {
+        ShowFaceRegModal = true;
+        CapturedSamples = 0;
+        RegStatusMessage = "Initializing camera feed...";
+
+        try
+        {
+            var regRes = await Http.PostAsync("/student/start_face_registration", null);
+            var regData = await regRes.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+
+            int studentId = PortalData.Student.Id;
+
+            RegHubConnection = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/hubs/attendance"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            RegHubConnection.On<byte[]>("register_processed_frame", async (frameBytes) =>
+            {
+                string base64 = Convert.ToBase64String(frameBytes);
+                await JS.InvokeVoidAsync("cameraInterop.renderFrameToCanvas", "regCanvas", base64);
+            });
+
+            RegHubConnection.On<object>("register_progress", async (data) =>
+            {
+                if (data is System.Text.Json.JsonElement elem)
+                {
+                    if (elem.TryGetProperty("captured_count", out var cProp))
+                        CapturedSamples = cProp.GetInt32();
+                }
+                await InvokeAsync(StateHasChanged);
+            });
+
+            RegHubConnection.On<object>("register_complete", async (data) =>
+            {
+                RegStatusMessage = "Face registered and model trained successfully!";
+                await Task.Delay(2000);
+                await StopFaceReg();
+                await LoadPortalData();
+            });
+
+            await RegHubConnection.StartAsync();
+            await JS.InvokeAsync<bool>("cameraInterop.startCamera", null, RegHubConnection);
+            await JS.InvokeVoidAsync("cameraInterop.captureAndSendFrame", null, RegHubConnection, "", "", "", true, studentId);
+        }
+        catch (Exception ex)
+        {
+            RegStatusMessage = $"Registration failed: {ex.Message}";
+        }
+    }
+
+    private async Task StopFaceReg()
+    {
+        ShowFaceRegModal = false;
+        try
+        {
+            await JS.InvokeVoidAsync("cameraInterop.stopCamera");
+            if (RegHubConnection != null)
+            {
+                await RegHubConnection.StopAsync();
+                await RegHubConnection.DisposeAsync();
+                RegHubConnection = null;
+            }
+        }
+        catch { }
+    }
+}

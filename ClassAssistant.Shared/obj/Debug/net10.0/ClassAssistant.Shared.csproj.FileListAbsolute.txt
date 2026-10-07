@@ -1,0 +1,12 @@
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\bin\Debug\net10.0\ClassAssistant.Shared.deps.json
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\bin\Debug\net10.0\ClassAssistant.Shared.dll
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\bin\Debug\net10.0\ClassAssistant.Shared.pdb
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.AssemblyInfoInputs.cache
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.AssemblyInfo.cs
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.csproj.CoreCompileInputs.cache
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.sourcelink.json
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.dll
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\refint\ClassAssistant.Shared.dll
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ClassAssistant.Shared.pdb
+C:\Users\HP\Desktop\ClassAssistant\ClassAssistant.Shared\obj\Debug\net10.0\ref\ClassAssistant.Shared.dll

@@ -1,0 +1,170 @@
+@page "/login"
+@page "/faculty"
+@page "/student"
+@page "/admin"
+@page "/teacher"
+@using ClassAssistant.Shared.DTOs
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="min-h-[85vh] flex items-center justify-center py-10 px-4">
+    <div class="w-full max-w-md glass-panel p-8 rounded-2xl shadow-2xl border border-slate-800 space-y-6">
+        <!-- App Title Header -->
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-inner">
+                🎓
+            </div>
+            <h2 class="text-2xl font-bold text-white tracking-tight">ClassAssistant AI</h2>
+            <p class="text-xs text-slate-400">Select your account portal to continue</p>
+        </div>
+
+        <!-- Role Selector Tabs -->
+        <div class="grid grid-cols-3 gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <button type="button" @onclick='() => SetRole("faculty")'
+                    class="py-2 text-xs font-semibold rounded-lg transition @(ActiveRole == "faculty" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Faculty
+            </button>
+            <button type="button" @onclick='() => SetRole("student")'
+                    class="py-2 text-xs font-semibold rounded-lg transition @(ActiveRole == "student" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Student
+            </button>
+            <button type="button" @onclick='() => SetRole("admin")'
+                    class="py-2 text-xs font-semibold rounded-lg transition @(ActiveRole == "admin" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Admin
+            </button>
+        </div>
+
+        <!-- Error Banner -->
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="p-3 text-xs text-rose-300 bg-rose-950/60 border border-rose-800/80 rounded-xl flex items-center gap-2">
+                <span>⚠️</span>
+                <span>@ErrorMessage</span>
+            </div>
+        }
+
+        <!-- Login Form -->
+        <EditForm Model="LoginForm" OnValidSubmit="HandleLogin" class="space-y-4">
+            @if (ActiveRole == "student")
+            {
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Student ID</label>
+                    <InputText @bind-Value="LoginForm.StudentId" placeholder="e.g. 221902117"
+                               class="w-full bg-slate-900/90 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition" />
+                </div>
+            }
+            else
+            {
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">
+                        @(ActiveRole == "admin" ? "Admin Email or Username" : "Faculty Email")
+                    </label>
+                    <InputText @bind-Value="LoginForm.Email" placeholder="@(ActiveRole == "admin" ? "admin@green.edu.bd" : "teacher@green.edu.bd")"
+                               class="w-full bg-slate-900/90 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition" />
+                </div>
+            }
+
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                <div class="relative">
+                    <InputText @bind-Value="LoginForm.Password" type="@(ShowPassword ? "text" : "password")" placeholder="••••••••"
+                               class="w-full bg-slate-900/90 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition pr-10" />
+                    <button type="button" @onclick="TogglePasswordVisibility" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
+                        @(ShowPassword ? "Hide" : "Show")
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" disabled="@IsLoading"
+                    class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
+                @if (IsLoading)
+                {
+                    <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Authenticating...</span>
+                }
+                else
+                {
+                    <span>Sign In to Portal</span>
+                }
+            </button>
+        </EditForm>
+
+        <!-- Credentials Hint -->
+        <div class="pt-4 border-t border-slate-800 text-center text-xs text-slate-400 space-y-1">
+            <p><strong class="text-slate-300">Demo Credentials:</strong></p>
+            <p>Faculty: <code class="text-emerald-400">teacher@green.edu.bd</code> / <code class="text-emerald-400">teacher123</code></p>
+            <p>Student: ID <code class="text-emerald-400">221902117</code> / <code class="text-emerald-400">student123</code></p>
+            <p>Admin: <code class="text-emerald-400">admin@green.edu.bd</code> / <code class="text-emerald-400">admin123</code></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string ActiveRole { get; set; } = "faculty";
+    private bool ShowPassword { get; set; } = false;
+    private bool IsLoading { get; set; } = false;
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    private LoginRequest LoginForm { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.Uri.ToLower();
+        if (uri.Contains("/student")) ActiveRole = "student";
+        else if (uri.Contains("/admin")) ActiveRole = "admin";
+        else ActiveRole = "faculty";
+    }
+
+    private void SetRole(string role)
+    {
+        ActiveRole = role;
+        ErrorMessage = string.Empty;
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        ShowPassword = !ShowPassword;
+    }
+
+    private async Task HandleLogin()
+    {
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            string endpoint = ActiveRole switch
+            {
+                "student" => "/student/signin",
+                "admin" => "/admin/signin",
+                _ => "/faculty/signin"
+            };
+
+            var response = await Http.PostAsJsonAsync(endpoint, LoginForm);
+            var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+            if (response.IsSuccessStatusCode && result != null && result.Msg == "success")
+            {
+                string targetPath = result.Role switch
+                {
+                    "admin" => "/admin/dashboard",
+                    "student" => "/student/dashboard",
+                    _ => "/faculty/dashboard"
+                };
+                Navigation.NavigateTo(targetPath);
+            }
+            else
+            {
+                ErrorMessage = result?.Msg ?? "Invalid credentials. Please verify your login details.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Authentication failed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

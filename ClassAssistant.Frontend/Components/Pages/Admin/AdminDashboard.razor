@@ -1,0 +1,406 @@
+@page "/admin/dashboard"
+@using ClassAssistant.Shared.DTOs
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="space-y-6">
+    <!-- Header Banner -->
+    <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/30">Admin Portal</span>
+                <span class="text-xs text-slate-400">System Administration & Provisioning</span>
+            </div>
+            <h2 class="text-2xl font-bold text-white mt-1">Academic System Console</h2>
+            <p class="text-xs text-slate-400">Manage student biometrics, faculty assignments, and course catalogs stored in PostgreSQL</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button type="button" @onclick="OpenAddModal" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition">
+                <span>➕ Add New Entry</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+                <p class="text-xs text-slate-400 font-medium">Enrolled Students</p>
+                <h3 class="text-2xl font-extrabold text-white mt-1">@Students.Count</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xl text-emerald-400">
+                👨‍🎓
+            </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+                <p class="text-xs text-slate-400 font-medium">Faculty Members</p>
+                <h3 class="text-2xl font-extrabold text-white mt-1">@Faculty.Count</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xl text-emerald-400">
+                👩‍🏫
+            </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+                <p class="text-xs text-slate-400 font-medium">Course Catalog</p>
+                <h3 class="text-2xl font-extrabold text-white mt-1">@Courses.Count</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xl text-emerald-400">
+                📚
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs & Search Bar -->
+    <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
+            <button type="button" @onclick='() => SetTab("students")'
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition @(ActiveTab == "students" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Students (@Students.Count)
+            </button>
+            <button type="button" @onclick='() => SetTab("faculty")'
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition @(ActiveTab == "faculty" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Faculty (@Faculty.Count)
+            </button>
+            <button type="button" @onclick='() => SetTab("courses")'
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition @(ActiveTab == "courses" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200")">
+                Courses (@Courses.Count)
+            </button>
+        </div>
+
+        <input type="text" @bind="SearchQuery" @bind:event="oninput" placeholder="Search entries..."
+               class="w-full sm:w-64 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none" />
+    </div>
+
+    <!-- Table View -->
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+        @if (ActiveTab == "students")
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Student ID</th>
+                            <th class="py-3 px-4">Full Name</th>
+                            <th class="py-3 px-4">Enrolled Courses</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        @foreach (var s in FilteredStudents)
+                        {
+                            <tr class="hover:bg-slate-800/40 transition">
+                                <td class="py-3 px-4 font-mono font-bold text-emerald-400">@s.Id</td>
+                                <td class="py-3 px-4 font-semibold text-white">@s.Name</td>
+                                <td class="py-3 px-4 text-slate-400">@(string.IsNullOrEmpty(s.Courses) ? "All Courses" : s.Courses)</td>
+                                <td class="py-3 px-4 text-right space-x-2">
+                                    <button type="button" @onclick="() => EditStudent(s)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px]">Edit</button>
+                                    <button type="button" @onclick="() => DeleteStudent(s.Id)" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-[11px]">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (ActiveTab == "faculty")
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Name</th>
+                            <th class="py-3 px-4">Email</th>
+                            <th class="py-3 px-4">Role</th>
+                            <th class="py-3 px-4">Assigned Courses</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        @foreach (var f in FilteredFaculty)
+                        {
+                            <tr class="hover:bg-slate-800/40 transition">
+                                <td class="py-3 px-4 font-semibold text-white">@f.Name</td>
+                                <td class="py-3 px-4 text-slate-300">@f.Email</td>
+                                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">@f.Role</span></td>
+                                <td class="py-3 px-4 text-slate-400">@f.Courses</td>
+                                <td class="py-3 px-4 text-right space-x-2">
+                                    <button type="button" @onclick="() => EditFaculty(f)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px]">Edit</button>
+                                    <button type="button" @onclick="() => DeleteFaculty(f.Id)" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-[11px]">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Code</th>
+                            <th class="py-3 px-4">Title</th>
+                            <th class="py-3 px-4">Section</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        @foreach (var c in FilteredCourses)
+                        {
+                            <tr class="hover:bg-slate-800/40 transition">
+                                <td class="py-3 px-4 font-mono font-bold text-emerald-400">@c.Code</td>
+                                <td class="py-3 px-4 font-semibold text-white">@c.Title</td>
+                                <td class="py-3 px-4">Section @c.Section</td>
+                                <td class="py-3 px-4 text-right space-x-2">
+                                    <button type="button" @onclick="() => EditCourse(c)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px]">Edit</button>
+                                    <button type="button" @onclick="() => DeleteCourse(c.Id)" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-[11px]">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Entry Form -->
+@if (ShowModal)
+{
+    <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-md w-full border border-slate-800 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white">@(IsEditing ? "Edit" : "Add New") @ActiveTab</h3>
+                <button type="button" @onclick="() => ShowModal = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">✕</button>
+            </div>
+
+            @if (ActiveTab == "students")
+            {
+                <EditForm Model="StudentForm" OnValidSubmit="SaveStudent" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Student ID</label>
+                        <InputNumber @bind-Value="StudentForm.Id" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+                        <InputText @bind-Value="StudentForm.Name" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Password</label>
+                        <InputText @bind-Value="StudentForm.Password" type="password" placeholder="Leave empty to keep existing" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Enrolled Courses (comma-separated)</label>
+                        <InputText @bind-Value="StudentForm.Courses" placeholder="CSE-101, CSE-102" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-md">Save Student</button>
+                </EditForm>
+            }
+            else if (ActiveTab == "faculty")
+            {
+                <EditForm Model="FacultyForm" OnValidSubmit="SaveFaculty" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Name</label>
+                        <InputText @bind-Value="FacultyForm.Name" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Email</label>
+                        <InputText @bind-Value="FacultyForm.Email" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Password</label>
+                        <InputText @bind-Value="FacultyForm.Password" type="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Role</label>
+                        <InputText @bind-Value="FacultyForm.Role" placeholder="user or admin" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Assigned Courses</label>
+                        <InputText @bind-Value="FacultyForm.Courses" placeholder="CSE-101, CSE-201" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-md">Save Faculty</button>
+                </EditForm>
+            }
+            else
+            {
+                <EditForm Model="CourseForm" OnValidSubmit="SaveCourse" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Course Code</label>
+                        <InputText @bind-Value="CourseForm.Code" placeholder="CSE-101" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Title</label>
+                        <InputText @bind-Value="CourseForm.Title" placeholder="Structured Programming" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Section</label>
+                        <InputText @bind-Value="CourseForm.Section" placeholder="A" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none" />
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-md">Save Course</button>
+                </EditForm>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string ActiveTab { get; set; } = "students";
+    private string SearchQuery { get; set; } = string.Empty;
+    private bool ShowModal { get; set; } = false;
+    private bool IsEditing { get; set; } = false;
+
+    private List<StudentDto> Students { get; set; } = new();
+    private List<FacultyDto> Faculty { get; set; } = new();
+    private List<CourseDto> Courses { get; set; } = new();
+
+    private StudentSaveRequest StudentForm { get; set; } = new();
+    private FacultySaveRequest FacultyForm { get; set; } = new();
+    private CourseSaveRequest CourseForm { get; set; } = new();
+
+    private List<StudentDto> FilteredStudents => Students
+        .Where(s => string.IsNullOrEmpty(SearchQuery) || s.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || s.Id.ToString().Contains(SearchQuery))
+        .ToList();
+
+    private List<FacultyDto> FilteredFaculty => Faculty
+        .Where(f => string.IsNullOrEmpty(SearchQuery) || f.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || f.Email.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    private List<CourseDto> FilteredCourses => Courses
+        .Where(c => string.IsNullOrEmpty(SearchQuery) || c.Code.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || c.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllData();
+    }
+
+    private async Task LoadAllData()
+    {
+        try
+        {
+            var resStud = await Http.GetFromJsonAsync<List<StudentDto>>("/admin/students");
+            Students = resStud ?? new();
+
+            var resFac = await Http.GetFromJsonAsync<List<FacultyDto>>("/admin/faculty");
+            Faculty = resFac ?? new();
+
+            var resCour = await Http.GetFromJsonAsync<List<CourseDto>>("/admin/courses");
+            Courses = resCour ?? new();
+        }
+        catch { }
+    }
+
+    private void SetTab(string tab)
+    {
+        ActiveTab = tab;
+    }
+
+    private void OpenAddModal()
+    {
+        IsEditing = false;
+        StudentForm = new();
+        FacultyForm = new();
+        CourseForm = new();
+        ShowModal = true;
+    }
+
+    private void EditStudent(StudentDto s)
+    {
+        IsEditing = true;
+        StudentForm = new StudentSaveRequest { Id = s.Id, OriginalId = s.Id, Name = s.Name, Courses = s.Courses };
+        ShowModal = true;
+    }
+
+    private async Task SaveStudent()
+    {
+        try
+        {
+            var res = await Http.PostAsJsonAsync("/admin/students", StudentForm);
+            if (res.IsSuccessStatusCode)
+            {
+                ShowModal = false;
+                await LoadAllData();
+            }
+        }
+        catch { }
+    }
+
+    private async Task DeleteStudent(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"/admin/students/{id}");
+            await LoadAllData();
+        }
+        catch { }
+    }
+
+    private void EditFaculty(FacultyDto f)
+    {
+        IsEditing = true;
+        FacultyForm = new FacultySaveRequest { Id = f.Id, Name = f.Name, Email = f.Email, Role = f.Role, Courses = f.Courses };
+        ShowModal = true;
+    }
+
+    private async Task SaveFaculty()
+    {
+        try
+        {
+            var res = await Http.PostAsJsonAsync("/admin/faculty", FacultyForm);
+            if (res.IsSuccessStatusCode)
+            {
+                ShowModal = false;
+                await LoadAllData();
+            }
+        }
+        catch { }
+    }
+
+    private async Task DeleteFaculty(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"/admin/faculty/{id}");
+            await LoadAllData();
+        }
+        catch { }
+    }
+
+    private void EditCourse(CourseDto c)
+    {
+        IsEditing = true;
+        CourseForm = new CourseSaveRequest { Id = c.Id, Code = c.Code, Title = c.Title, Section = c.Section };
+        ShowModal = true;
+    }
+
+    private async Task SaveCourse()
+    {
+        try
+        {
+            var res = await Http.PostAsJsonAsync("/admin/courses", CourseForm);
+            if (res.IsSuccessStatusCode)
+            {
+                ShowModal = false;
+                await LoadAllData();
+            }
+        }
+        catch { }
+    }
+
+    private async Task DeleteCourse(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"/admin/courses/{id}");
+            await LoadAllData();
+        }
+        catch { }
+    }
+}

@@ -1,0 +1,89 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "ClassAssistant.Frontend/1.0.0": {
+        "dependencies": {
+          "ClassAssistant.Shared": "1.0.0",
+          "Microsoft.AspNetCore.SignalR.Client": "10.0.12"
+        },
+        "runtime": {
+          "ClassAssistant.Frontend.dll": {}
+        }
+      },
+      "Microsoft.AspNetCore.Http.Connections.Client/10.0.12": {
+        "runtime": {
+          "lib/net10.0/Microsoft.AspNetCore.Http.Connections.Client.dll": {
+            "assemblyVersion": "10.0.12.0",
+            "fileVersion": "10.0.1226.42308"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client/10.0.12": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Connections.Client": "10.0.12",
+          "Microsoft.AspNetCore.SignalR.Client.Core": "10.0.12"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.AspNetCore.SignalR.Client.dll": {
+            "assemblyVersion": "10.0.12.0",
+            "fileVersion": "10.0.1226.42308"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client.Core/10.0.12": {
+        "runtime": {
+          "lib/net10.0/Microsoft.AspNetCore.SignalR.Client.Core.dll": {
+            "assemblyVersion": "10.0.12.0",
+            "fileVersion": "10.0.1226.42308"
+          }
+        }
+      },
+      "ClassAssistant.Shared/1.0.0": {
+        "runtime": {
+          "ClassAssistant.Shared.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ClassAssistant.Frontend/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AspNetCore.Http.Connections.Client/10.0.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HEO648tD8OyX6aUNQwJSl1eKQk5eQChuHTqpybv2ep7/518/M27yeDDFxAh2M/LW+22tbbooao6raNEHm7lBhA==",
+      "path": "microsoft.aspnetcore.http.connections.client/10.0.12",
+      "hashPath": "microsoft.aspnetcore.http.connections.client.10.0.12.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.SignalR.Client/10.0.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-p5EFZrp20HlS1MbYkreyhHy4nXeq/LrXVLWbQLBuAz2eFCdSnKfoNVlxZYbFoEjzJxa68CYdEFe9ObCaYTUP8Q==",
+      "path": "microsoft.aspnetcore.signalr.client/10.0.12",
+      "hashPath": "microsoft.aspnetcore.signalr.client.10.0.12.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.SignalR.Client.Core/10.0.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+kCyWCOvZteBkqfbpmoi+ejIR1XVJOY4ydDNYrYt1WdXv/ruJS4WjDfCizGZ5lvn/OmRdMuVdh8opopbNveQcw==",
+      "path": "microsoft.aspnetcore.signalr.client.core/10.0.12",
+      "hashPath": "microsoft.aspnetcore.signalr.client.core.10.0.12.nupkg.sha512"
+    },
+    "ClassAssistant.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

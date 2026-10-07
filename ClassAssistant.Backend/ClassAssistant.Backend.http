@@ -1,0 +1,6 @@
+@ClassAssistant.Backend_HostAddress = http://localhost:5048
+
+GET {{ClassAssistant.Backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
