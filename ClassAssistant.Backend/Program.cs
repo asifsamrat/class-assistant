@@ -29,17 +29,32 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure EF Core with PostgreSQL
+// Configure EF Core with PostgreSQL (or In-Memory Fallback if Postgres is offline)
 string connString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Database=classassistant_db;Username=postgres;Password=postgres";
+
+bool isPostgresAvailable = false;
+try
+{
+    var builderConn = new Npgsql.NpgsqlConnectionStringBuilder(connString) { Timeout = 2 };
+    using var testConn = new Npgsql.NpgsqlConnection(builderConn.ConnectionString);
+    testConn.Open();
+    isPostgresAvailable = true;
+    Console.WriteLine("[Database SUCCESS] Connected to PostgreSQL database server.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[Database INFO] PostgreSQL server is offline or unreachable ({ex.Message}). Using In-Memory database fallback.");
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    try
+    if (isPostgresAvailable)
     {
         options.UseNpgsql(connString);
     }
-    catch
+    else
     {
-        options.UseInMemoryDatabase("FallbackDb");
+        options.UseInMemoryDatabase("ClassAssistantDb");
     }
 });
 

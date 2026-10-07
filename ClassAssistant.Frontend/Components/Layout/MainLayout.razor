@@ -2,45 +2,45 @@
 @inject NavigationManager Navigation
 @inject HttpClient Http
 
-<div class="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+<div class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
     <!-- Header Navbar -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-6 py-3.5 flex items-center justify-between shadow-xl">
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
         <div class="flex items-center space-x-3 cursor-pointer" @onclick='() => Navigation.NavigateTo("/login")'>
-            <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xl shadow-lg shadow-emerald-950">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold text-xl shadow-xs">
                 🎓
             </div>
             <div>
-                <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
-                    ClassAssistant <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30">AI .NET</span>
+                <h1 class="text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                    ClassAssistant <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full border border-emerald-200 font-bold">AI .NET</span>
                 </h1>
-                <p class="text-xs text-slate-400 font-medium">Enterprise Face Recognition System</p>
+                <p class="text-xs text-slate-500 font-medium">Enterprise Automated Attendance System</p>
             </div>
         </div>
 
-        <div class="flex items-center space-x-4">
-            <a href="/faculty" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-300 hover:text-emerald-400 hover:bg-slate-800/60 transition">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <a href="/faculty" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition">
                 Faculty Portal
             </a>
-            <a href="/student" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-300 hover:text-emerald-400 hover:bg-slate-800/60 transition">
+            <a href="/student" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition">
                 Student Portal
             </a>
-            <a href="/admin" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-300 hover:text-emerald-400 hover:bg-slate-800/60 transition">
+            <a href="/admin" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition">
                 Admin Portal
             </a>
-            <button type="button" @onclick="HandleLogout" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+            <button type="button" @onclick="HandleLogout" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs">
                 <span>Sign Out</span>
             </button>
         </div>
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+    <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
         @Body
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800/60 py-4 px-6 text-center text-xs text-slate-500">
-        ClassAssistant AI &copy; 2026. Industry Architecture: Web API + Blazor + PostgreSQL + EF Core.
+    <footer class="border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500">
+        ClassAssistant AI &copy; 2026. Powered by ASP.NET Core, EF Core, PostgreSQL & Blazor.
     </footer>
 </div>
 

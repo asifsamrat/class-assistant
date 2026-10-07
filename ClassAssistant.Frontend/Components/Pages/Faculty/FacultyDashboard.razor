@@ -6,30 +6,31 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 <div class="space-y-6">
     <!-- Header Banner -->
-    <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+    <div class="bg-white p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-200 shadow-sm">
         <div>
             <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold px-2.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/30">Faculty Portal</span>
-                <span class="text-xs text-slate-400">Live Attendance Session</span>
+                <span class="text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg border border-emerald-200">Faculty Portal</span>
+                <span class="text-xs text-slate-500 font-medium">Live Attendance Session</span>
             </div>
-            <h2 class="text-2xl font-bold text-white mt-1">Instructor Control Dashboard</h2>
-            <p class="text-xs text-slate-400">Stream webcam frames to AI engine and persist course attendance to PostgreSQL</p>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Instructor Control Dashboard</h2>
+            <p class="text-xs text-slate-500">Stream webcam frames to AI engine and persist course attendance to PostgreSQL</p>
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="button" @onclick="ShowNoticesModal" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+            <button type="button" @onclick="ShowNoticesModal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-2xs">
                 <span>📩 Absence Notices</span>
                 @if (AbsenceNotices.Any(n => n.Status == "Submitted"))
                 {
-                    <span class="bg-amber-500 text-slate-950 font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">
+                    <span class="bg-amber-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow-2xs">
                         @AbsenceNotices.Count(n => n.Status == "Submitted")
                     </span>
                 }
             </button>
-            <button type="button" @onclick="ExportToExcel" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition">
+            <button type="button" @onclick="ExportToExcel" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-200 flex items-center gap-2 transition cursor-pointer">
                 <span>📊 Export Matrix (Excel)</span>
             </button>
         </div>
@@ -38,22 +39,22 @@
     <!-- Live Stream Control Bar & Video Viewport -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Live Camera Viewport -->
-        <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full @(IsStreaming ? "bg-emerald-500 animate-pulse" : "bg-slate-600")"></span>
-                    <h3 class="font-bold text-sm text-slate-200">Live AI Webcam Feed</h3>
+                    <span class="w-3 h-3 rounded-full @(IsStreaming ? "bg-emerald-500 animate-pulse" : "bg-slate-400")"></span>
+                    <h3 class="font-bold text-sm text-slate-900">Live AI Webcam Feed</h3>
                 </div>
                 <div class="flex items-center gap-2">
                     @if (!IsStreaming)
                     {
-                        <button type="button" @onclick="StartStreaming" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-md">
+                        <button type="button" @onclick="StartStreaming" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer">
                             ▶️ Start Camera
                         </button>
                     }
                     else
                     {
-                        <button type="button" @onclick="StopStreaming" class="px-4 py-1.5 bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg transition shadow-md">
+                        <button type="button" @onclick="StopStreaming" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer">
                             ⏹️ Stop Camera
                         </button>
                     }
@@ -61,28 +62,28 @@
             </div>
 
             <!-- Canvas Viewport -->
-            <div class="relative bg-slate-950 rounded-xl border border-slate-800/80 aspect-video flex items-center justify-center overflow-hidden">
+            <div class="relative bg-slate-900 rounded-xl border border-slate-200 aspect-video flex items-center justify-center overflow-hidden shadow-inner">
                 <canvas id="facultyCanvas" class="w-full h-full object-cover"></canvas>
                 @if (!IsStreaming)
                 {
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-950/80 backdrop-blur-xs">
-                        <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-2xl text-slate-500 mb-3">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-950/80 backdrop-blur-xs text-white">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl text-slate-300 mb-3 shadow-md">
                             📷
                         </div>
-                        <p class="text-sm font-semibold text-slate-300">Camera Feed Paused</p>
-                        <p class="text-xs text-slate-500 max-w-xs mt-1">Click "Start Camera" above to initiate real-time multi-student face recognition</p>
+                        <p class="text-sm font-bold text-slate-100">Camera Feed Paused</p>
+                        <p class="text-xs text-slate-300 max-w-xs mt-1">Click "Start Camera" above to initiate real-time multi-student face recognition</p>
                     </div>
                 }
             </div>
         </div>
 
         <!-- Course & Date Scoping Form -->
-        <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-            <h3 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-3">Session Configuration</h3>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Session Configuration</h3>
 
             <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Active Course</label>
-                <select @bind="SelectedCourseCode" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none">
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Active Course</label>
+                <select @bind="SelectedCourseCode" class="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 rounded-xl px-3.5 py-2 text-xs text-slate-900 outline-none">
                     <option value="">-- All Assigned Courses --</option>
                     @foreach (var c in AssignedCourses)
                     {
@@ -92,17 +93,17 @@
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Session Date</label>
-                <input type="date" @bind="SelectedDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none" />
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Session Date</label>
+                <input type="date" @bind="SelectedDate" class="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 rounded-xl px-3.5 py-2 text-xs text-slate-900 outline-none" />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Search Matrix</label>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Search Matrix</label>
                 <input type="text" @bind="SearchQuery" @bind:event="oninput" placeholder="Search student name or ID..."
-                       class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none" />
+                       class="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 rounded-xl px-3.5 py-2 text-xs text-slate-900 outline-none" />
             </div>
 
-            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
                 <p>🔹 Multi-student deep face recognition enabled.</p>
                 <p>🔹 Attendance auto-synced to EF Core PostgreSQL.</p>
             </div>
@@ -110,45 +111,45 @@
     </div>
 
     <!-- Attendance Matrix Table -->
-    <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex items-center justify-between">
-            <h3 class="font-bold text-base text-white">Attendance Summary Matrix</h3>
-            <span class="text-xs text-slate-400">Total Records: @FilteredAttendanceLogs.Count</span>
+            <h3 class="font-bold text-base text-slate-900">Attendance Summary Matrix</h3>
+            <span class="text-xs text-slate-500 font-medium">Total Records: @FilteredAttendanceLogs.Count</span>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs text-slate-700">
+                <thead class="bg-slate-100/90 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
                     <tr>
-                        <th class="py-3 px-4">Student</th>
-                        <th class="py-3 px-4">Course</th>
-                        <th class="py-3 px-4">Date</th>
-                        <th class="py-3 px-4">Check In</th>
-                        <th class="py-3 px-4">Check Out</th>
-                        <th class="py-3 px-4">Stay Time</th>
-                        <th class="py-3 px-4 text-right">Status</th>
+                        <th class="py-3.5 px-4">Student</th>
+                        <th class="py-3.5 px-4">Course</th>
+                        <th class="py-3.5 px-4">Date</th>
+                        <th class="py-3.5 px-4">Check In</th>
+                        <th class="py-3.5 px-4">Check Out</th>
+                        <th class="py-3.5 px-4">Stay Time</th>
+                        <th class="py-3.5 px-4 text-right">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-800/60">
+                <tbody class="divide-y divide-slate-200">
                     @if (FilteredAttendanceLogs.Count == 0)
                     {
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-500">No attendance records found for selected filters.</td>
+                            <td colspan="7" class="py-8 text-center text-slate-400 font-medium">No attendance records found for selected filters.</td>
                         </tr>
                     }
                     else
                     {
                         @foreach (var log in FilteredAttendanceLogs)
                         {
-                            <tr class="hover:bg-slate-800/40 transition">
-                                <td class="py-3 px-4 font-semibold text-white">@log.Course</td>
-                                <td class="py-3 px-4">@log.Course</td>
-                                <td class="py-3 px-4">@log.Date</td>
-                                <td class="py-3 px-4 text-emerald-400">@log.CheckIn</td>
-                                <td class="py-3 px-4 text-slate-400">@log.CheckOut</td>
-                                <td class="py-3 px-4">@log.TotalMinutes mins</td>
-                                <td class="py-3 px-4 text-right">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold @(log.Status == "Present" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30")">
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="py-3.5 px-4 font-bold text-slate-900">@log.Course</td>
+                                <td class="py-3.5 px-4 font-medium">@log.Course</td>
+                                <td class="py-3.5 px-4 text-slate-600">@log.Date</td>
+                                <td class="py-3.5 px-4 font-bold text-emerald-700">@log.CheckIn</td>
+                                <td class="py-3.5 px-4 text-slate-500">@log.CheckOut</td>
+                                <td class="py-3.5 px-4">@log.TotalMinutes mins</td>
+                                <td class="py-3.5 px-4 text-right">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold @(log.Status == "Present" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-rose-100 text-rose-800 border border-rose-300")">
                                         @log.Status
                                     </span>
                                 </td>
@@ -164,41 +165,41 @@
 <!-- Absence Notices Modal -->
 @if (ShowNoticesModalFlag)
 {
-    <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="glass-panel p-6 rounded-2xl max-w-2xl w-full border border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-base text-white">Student Absence Excuse Notices</h3>
-                <button type="button" @onclick="() => ShowNoticesModalFlag = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">✕</button>
+    <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl max-w-2xl w-full border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Student Absence Excuse Notices</h3>
+                <button type="button" @onclick="() => ShowNoticesModalFlag = false" class="text-slate-400 hover:text-slate-800 text-xs font-bold px-2 py-1 bg-slate-100 rounded-lg">✕</button>
             </div>
 
             <div class="space-y-3">
                 @if (AbsenceNotices.Count == 0)
                 {
-                    <p class="text-center py-6 text-xs text-slate-500">No student absence notices submitted yet.</p>
+                    <p class="text-center py-6 text-xs text-slate-400 font-medium">No student absence notices submitted yet.</p>
                 }
                 else
                 {
                     @foreach (var notice in AbsenceNotices)
                     {
-                        <div class="p-4 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                             <div class="flex items-center justify-between">
-                                <span class="font-bold text-sm text-emerald-400">@notice.StudentName (ID: @notice.StudentId)</span>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full @(notice.Status == "Approved" ? "bg-emerald-500/20 text-emerald-400" : notice.Status == "Rejected" ? "bg-rose-500/20 text-rose-400" : "bg-amber-500/20 text-amber-400")">
+                                <span class="font-bold text-sm text-slate-900">@notice.StudentName (ID: @notice.StudentId)</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full @(notice.Status == "Approved" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : notice.Status == "Rejected" ? "bg-rose-100 text-rose-800 border border-rose-300" : "bg-amber-100 text-amber-800 border border-amber-300")">
                                     @notice.Status
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-300"><strong>Course:</strong> @notice.Course | <strong>Date:</strong> @notice.Date</p>
-                            <p class="text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">"@notice.Reason"</p>
+                            <p class="text-xs text-slate-600"><strong>Course:</strong> @notice.Course | <strong>Date:</strong> @notice.Date</p>
+                            <p class="text-xs text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200">"@notice.Reason"</p>
 
                             @if (notice.Status == "Submitted")
                             {
                                 <div class="flex items-center gap-2 pt-1 justify-end">
                                     <button type="button" @onclick='() => UpdateNoticeStatus(notice.Id, "Approved")'
-                                            class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm">
+                                            class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs cursor-pointer">
                                         Accept Excuse
                                     </button>
                                     <button type="button" @onclick='() => UpdateNoticeStatus(notice.Id, "Rejected")'
-                                            class="px-3 py-1 bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg shadow-sm">
+                                            class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-2xs cursor-pointer">
                                         Reject
                                     </button>
                                 </div>

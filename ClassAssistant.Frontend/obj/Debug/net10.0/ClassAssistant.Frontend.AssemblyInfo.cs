@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ClassAssistant.Frontend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25676d79341fa627e1aa339ef07f8fba7ebf651e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+271f5b9ab804ae825c0477aff97fb50b447727c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("ClassAssistant.Frontend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ClassAssistant.Frontend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
